@@ -7,7 +7,7 @@
  *
  * ~~~SIP.js contains substantial portions of JsSIP under the following license~~~
  * Homepage: http://jssip.net
- * Copyright (c) 2012-2013 José Luis Millán - Versatica <http://www.versatica.com> 
+ * Copyright (c) 2012-2013 José Luis Millán - Versatica <http://www.versatica.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -16,10 +16,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -7981,7 +7981,7 @@ Transport.prototype = {
   send: function(msg) {
     var message = msg.toString();
 
-    if(this.ws && this.ws.readyState === window.WebSocket.OPEN) {
+    if(this.ws && this.ws.readyState === 1) {
       if (this.ua.configuration.traceSip === true) {
         this.logger.log('sending WebSocket message:\n\n' + message + '\n');
       }
@@ -8023,7 +8023,7 @@ Transport.prototype = {
   connect: function() {
     var transport = this;
 
-    if(this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
+    if(this.ws && (this.ws.readyState === 1 || this.ws.readyState === 0)) {
       this.logger.log('WebSocket ' + this.server.ws_uri + ' is already connected');
       return false;
     }
