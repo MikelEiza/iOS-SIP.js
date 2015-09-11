@@ -21,7 +21,7 @@
     <clobbers target="cordova.plugins.sipjs" />
   </js-module>
   <js-module name="sipjslegacy" src="sip-0.6.4.js">
-    <clobbers target="cordova.plugins.sipjs" />
+    <clobbers target="cordova.plugins.sipjslegacy" />
   </js-module>
   <platform name="ios">
     <info>
