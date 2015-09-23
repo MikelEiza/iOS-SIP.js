@@ -16,21 +16,24 @@ class SessionDescriptionDelegate : UIResponder, RTCSessionDescriptionDelegate {
             for var ptr = ifaddr; ptr != nil; ptr = ptr.memory.ifa_next {
                 let flags = Int32(ptr.memory.ifa_flags)
                 var addr = ptr.memory.ifa_addr.memory
+                
                 // Check for running IPv4, IPv6 interfaces. Skip the loopback interface.
-                if (flags & (IFF_UP|IFF_RUNNING|IFF_LOOPBACK)) == (IFF_UP|IFF_RUNNING) {
-                    if addr.sa_family == UInt8(AF_INET) || addr.sa_family == UInt8(AF_INET6) {
+                //if (flags & (IFF_UP|IFF_RUNNING|IFF_LOOPBACK)) == (IFF_UP|IFF_RUNNING) {
+                    if (addr.sa_family == UInt8(AF_INET) || addr.sa_family == UInt8(AF_INET6)) {
                         // Convert interface address to a human readable string:
                         var hostname = [CChar](count: Int(NI_MAXHOST), repeatedValue: 0)
-                        if getnameinfo(&addr, socklen_t(addr.sa_len), &hostname, socklen_t(hostname.count),
-                            nil, socklen_t(0), NI_NUMERICHOST) == 0 {
+                        if getnameinfo(&addr, socklen_t(addr.sa_len), &hostname, socklen_t(hostname.count), nil, socklen_t(0), NI_NUMERICHOST) == 0 {
                             if let address = String.fromCString(hostname) {
                                 let name = NSString(UTF8String: ptr.memory.ifa_name)! as String
-                                addresses.append(name: name, address: address)
+                                if (name == "pdp_ip0" || name == "pdp_ip1" || name == "pdp_ip2" || name == "pdp_ip3" || name == "en0" || name == "en1")
+                                {
+                                    addresses.append(name: name, address: address)
+                                }
                             }
                         }
                         
                     }
-                }
+                //}
             }
             freeifaddrs(ifaddr)
         }
@@ -44,6 +47,7 @@ class SessionDescriptionDelegate : UIResponder, RTCSessionDescriptionDelegate {
         let interfaces = self.getInterfaces()
         // Always try to use the wifi adapter when available and if not fallback to
         // the first active interface.
+        
         if interfaces.count > 0 {
             for item in interfaces {
                 if(item.name == "en0") {
