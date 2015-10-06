@@ -16,28 +16,28 @@ class Session {
     var track: RTCAudioTrack?
     
     init(config: SessionConfig,
-         peerConnectionFactory: RTCPeerConnectionFactory,
-         plugin: PhoneRTCPlugin,
-         callbackId: String,
-         sessionKey: String) {
-        self.plugin = plugin
-        self.callbackId = callbackId
-        self.config = config
-        self.sessionKey = sessionKey
-        self.peerConnectionFactory = peerConnectionFactory
-        // Define the peer connection constraints.
-        let mandatory = [
-            RTCPair(key: "OfferToReceiveAudio", value: "true"),
-            RTCPair(key: "OfferToReceiveVideo", value: "false")
-        ]
-        let optional = [
-            RTCPair(key: "internalSctpDataChannels", value: "true"),
-            RTCPair(key: "DtlsSrtpKeyAgreement", value: "true")
-        ]
-        self.peerConnectionConstraints = RTCMediaConstraints(mandatoryConstraints: mandatory,
-                                                             optionalConstraints: optional)
+        peerConnectionFactory: RTCPeerConnectionFactory,
+        plugin: PhoneRTCPlugin,
+        callbackId: String,
+        sessionKey: String) {
+            self.plugin = plugin
+            self.callbackId = callbackId
+            self.config = config
+            self.sessionKey = sessionKey
+            self.peerConnectionFactory = peerConnectionFactory
+            // Define the peer connection constraints.
+            let mandatory = [
+                RTCPair(key: "OfferToReceiveAudio", value: "true"),
+                RTCPair(key: "OfferToReceiveVideo", value: "false")
+            ]
+            let optional = [
+                RTCPair(key: "internalSctpDataChannels", value: "true"),
+                RTCPair(key: "DtlsSrtpKeyAgreement", value: "true")
+            ]
+            self.peerConnectionConstraints = RTCMediaConstraints(mandatoryConstraints: mandatory,
+                optionalConstraints: optional)
     }
-
+    
     func disconnect() {
         if self.peerConnection != nil {
             self.peerConnection.close()
@@ -54,8 +54,8 @@ class Session {
         // Initialize the peer connection.
         self.peerConnectionObserver = PCObserver(session: self)
         self.peerConnection = peerConnectionFactory.peerConnectionWithICEServers(iceServers,
-                constraints: self.peerConnectionConstraints,
-                delegate: self.peerConnectionObserver)
+            constraints: self.peerConnectionConstraints,
+            delegate: self.peerConnectionObserver)
         // Add the audio track.
         self.stream = peerConnectionFactory.mediaStreamWithLabel("ARDAMS")
         self.track = peerConnectionFactory.audioTrackWithID("ARDAMSa0")
@@ -64,38 +64,43 @@ class Session {
         // If we are acting as the caller then generate an offer.
         if self.config.isInitiator {
             self.peerConnection.createOfferWithDelegate(SessionDescriptionDelegate(session: self),
-                                                        constraints: self.peerConnectionConstraints)
+                constraints: self.peerConnectionConstraints)
         }
     }
     
     func receive(message: String) {
         // Parse the incoming message.
         var error : NSError?
-        let data : AnyObject? = NSJSONSerialization.JSONObjectWithData(
-            message.dataUsingEncoding(NSUTF8StringEncoding)!,
-            options: NSJSONReadingOptions.allZeros,
-            error: &error)
+        let data : AnyObject?
+        do {
+            data = try NSJSONSerialization.JSONObjectWithData(
+                message.dataUsingEncoding(NSUTF8StringEncoding)!,
+                options: NSJSONReadingOptions())
+        } catch var error1 as NSError {
+            error = error1
+            data = nil
+        }
         if let object: AnyObject = data {
-            println("INFO: \(object)")
+            print("INFO: \(object)")
             // If the message has a type of answer or offer try to handle it.
             if let type = object.objectForKey("type") as? String {
                 switch type {
-                    case "offer", "answer":
-                        if let sdpString = object.objectForKey("sdp") as? String {
-                            if self.peerConnection == nil {
-                                self.initialize()
-                            }
-                            let sdp = RTCSessionDescription(type: type, sdp: sdpString)
-                            self.peerConnection.setRemoteDescriptionWithDelegate(SessionDescriptionDelegate(session: self),
-                                                                                 sessionDescription: sdp!)
+                case "offer", "answer":
+                    if let sdpString = object.objectForKey("sdp") as? String {
+                        if self.peerConnection == nil {
+                            self.initialize()
                         }
-                    default:
-                        println("ERROR: Invalid message \(message)")
+                        let sdp = RTCSessionDescription(type: type, sdp: sdpString)
+                        self.peerConnection.setRemoteDescriptionWithDelegate(SessionDescriptionDelegate(session: self),
+                            sessionDescription: sdp!)
+                    }
+                default:
+                    print("ERROR: Invalid message \(message)")
                 }
             }
         } else {
             if let parseError = error {
-                println("ERROR: \(parseError.localizedDescription)")
+                print("ERROR: \(parseError.localizedDescription)")
             }
             return
         }
@@ -104,7 +109,7 @@ class Session {
     func send(message: NSData) {
         self.plugin.dispatch(self.callbackId, message: message)
     }
-
+    
     func toggleMute(mute: Bool) {
         for item in self.stream!.audioTracks {
             let track = item as! RTCAudioTrack

@@ -27,11 +27,11 @@ class PhoneRTCPlugin : CDVPlugin {
             }
         }
     }
-
+    
     func destroySession(sessionKey: String) {
         self.sessions.removeValueForKey(sessionKey)
     }
-
+    
     func createWebSocket(command: CDVInvokedUrlCommand) {
         let url = command.argumentAtIndex(0) as? String
         let protocols = command.argumentAtIndex(1) as? [String]
@@ -43,7 +43,7 @@ class PhoneRTCPlugin : CDVPlugin {
             sockets[key!] = socket
         }
     }
-
+    
     func destroyWebSocket(sessionKey: String) {
         self.sockets.removeValueForKey(sessionKey)
     }
@@ -56,7 +56,7 @@ class PhoneRTCPlugin : CDVPlugin {
             self.sockets[key!]!.close(code, reason: reason)
         }
     }
-
+    
     func disconnect(command: CDVInvokedUrlCommand) {
         let args: AnyObject = command.argumentAtIndex(0)
         if let sessionKey = args.objectForKey("sessionKey") as? String {
@@ -69,12 +69,11 @@ class PhoneRTCPlugin : CDVPlugin {
     }
     
     func dispatch(callbackId: String, message: NSData) {
-        let json = NSJSONSerialization.JSONObjectWithData(message,
-            options: NSJSONReadingOptions.MutableLeaves,
-            error: nil) as! [NSObject: AnyObject]
+        let json = (try! NSJSONSerialization.JSONObjectWithData(message,
+            options: NSJSONReadingOptions.MutableLeaves)) as! [NSObject: AnyObject]
         let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAsDictionary: json)
         pluginResult.setKeepCallbackAsBool(true);
-        self.commandDelegate.sendPluginResult(pluginResult, callbackId: callbackId)
+        self.commandDelegate!.sendPluginResult(pluginResult, callbackId: callbackId)
     }
     
     func initialize(command: CDVInvokedUrlCommand) {
@@ -117,7 +116,7 @@ class PhoneRTCPlugin : CDVPlugin {
             self.sockets[key!]!.send(data!)
         }
     }
-
+    
     func toggleMute(command: CDVInvokedUrlCommand) {
         let args: AnyObject = command.argumentAtIndex(0);
         if let sessionKey = args.objectForKey("sessionKey") as? String {
