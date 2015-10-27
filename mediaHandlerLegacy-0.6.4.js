@@ -1,10 +1,12 @@
-/**
- * @fileoverview PhoneRTCMediaHandlerLegacy
- */
+function newer (constructor) {
+  return function() {
+    var instance = Object.create(constructor.prototype);
+    var result = constructor.apply(instance, arguments);
+    return typeof result === 'object' ? result : instance;
+  };
+}
 
-/**
- * Implements the PhoneRTC media handler constructor for SIP.js <= 0.6.4.
- */
+module.exports = function(SIP) {
 var PhoneRTCMediaHandlerLegacy = function(session, options) {
 	// Create a logger.
 	window.console.log('Loading the Legacy PhoneRTC 2.0 Media Handler.');
@@ -131,7 +133,7 @@ PhoneRTCMediaHandlerLegacy.prototype = Object.create(SIP.MediaHandler.prototype,
     phonertc.session = new cordova.plugins.phonertc.Session({
       isInitiator: phonertc.role === 'caller'
     });
-    var candidates = '';
+		var candidates = '';
     phonertc.session.on('sendMessage', function (data) {
       if(data.type === 'offer' || data.type === 'answer') {
         phonertc.sdp = data.sdp;
@@ -152,7 +154,7 @@ PhoneRTCMediaHandlerLegacy.prototype = Object.create(SIP.MediaHandler.prototype,
         // Start the watchdog.
         watchdog = setTimeout(function() {
           if(onSuccess) {
-            phonertc.sdp += candidates;
+						phonertc.sdp += candidates;
             onSuccess(phonertc.sdp);
           }
         }, 500);
@@ -168,13 +170,6 @@ PhoneRTCMediaHandlerLegacy.prototype = Object.create(SIP.MediaHandler.prototype,
 	}}
 });
 
-/**
- * MediaHandler
- * @class PeerConnection helper Class.
- * @param {SIP.Session} session
- * @param {Object} [options]
- */
-module.exports = function(SIP) {
-	// Return the PhoneRTC media handler implementation.
-	return PhoneRTCMediaHandlerLegacy;
+PhoneRTCMediaHandlerLegacy = newer(PhoneRTCMediaHandlerLegacy);
+return PhoneRTCMediaHandlerLegacy;
 };
