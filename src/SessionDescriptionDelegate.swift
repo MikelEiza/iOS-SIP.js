@@ -2,11 +2,11 @@ import Foundation
 
 class SessionDescriptionDelegate : UIResponder, RTCSessionDescriptionDelegate {
     var session: Session
-    
+
     init(session: Session) {
         self.session = session
     }
-    
+
     func getInterfaces() -> [(name: String, address: String)] {
         var addresses: [(name: String, address: String)] = []
         // Get list of all interfaces on the local machine:
@@ -18,7 +18,7 @@ class SessionDescriptionDelegate : UIResponder, RTCSessionDescriptionDelegate {
                 var addr = ptr.memory.ifa_addr.memory
                 // Check for running IPv4, IPv6 interfaces. Skip the loopback interface.
                 //if (flags & (IFF_UP|IFF_RUNNING|IFF_LOOPBACK)) == (IFF_UP|IFF_RUNNING) {
-                    if addr.sa_family == UInt8(AF_INET) || addr.sa_family == UInt8(AF_INET6) {
+                    if addr.sa_family == UInt8(AF_INET)/* || addr.sa_family == UInt8(AF_INET6)*/ {
                         // Convert interface address to a human readable string:
                         var hostname = [CChar](count: Int(NI_MAXHOST), repeatedValue: 0)
                         if getnameinfo(&addr, socklen_t(addr.sa_len), &hostname, socklen_t(hostname.count),
@@ -31,7 +31,7 @@ class SessionDescriptionDelegate : UIResponder, RTCSessionDescriptionDelegate {
                                     }
                                 }
                         }
-                        
+
                     }
                 //}
             }
@@ -39,7 +39,7 @@ class SessionDescriptionDelegate : UIResponder, RTCSessionDescriptionDelegate {
         }
         return addresses
     }
-    
+
     func patchSessionDescription(sdp: String) -> String {
         var patched = ""
         // Select an active network interface device to use.
@@ -72,7 +72,7 @@ class SessionDescriptionDelegate : UIResponder, RTCSessionDescriptionDelegate {
         }
         return patched
     }
-    
+
     func peerConnection(peerConnection: RTCPeerConnection!,
         didCreateSessionDescription sdp: RTCSessionDescription!, error: NSError!) {
             // Set the local session description and dispatch a copy to the js engine.
@@ -106,7 +106,7 @@ class SessionDescriptionDelegate : UIResponder, RTCSessionDescriptionDelegate {
                 print("ERROR: \(error.localizedDescription)")
             }
     }
-    
+
     func peerConnection(peerConnection: RTCPeerConnection!,
         didSetSessionDescriptionWithError error: NSError!) {
             // If we are acting as the callee then generate an answer to the offer.
