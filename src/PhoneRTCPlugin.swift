@@ -8,15 +8,24 @@ class PhoneRTCPlugin : CDVPlugin {
     var sessions: [String: Session]
     var sockets: [String: WebSocket]
     
-    override init(webView: UIWebView) {
+    override init() {
         application = UIApplication.sharedApplication()
         peerConnectionFactory = RTCPeerConnectionFactory()
         RTCPeerConnectionFactory.initializeSSL()
         sessions = [:]
         sockets = [:]
-        super.init(webView: webView)
+        super.init()
     }
-    
+
+    override func pluginInitialize () {
+        application = UIApplication.sharedApplication()
+        peerConnectionFactory = RTCPeerConnectionFactory()
+        RTCPeerConnectionFactory.initializeSSL()
+        sessions = [:]
+        sockets = [:]
+        super.pluginInitialize()
+    }
+
     func createSession(command: CDVInvokedUrlCommand) {
         if let sessionKey = command.argumentAtIndex(0) as? String {
             if let args: AnyObject = command.argumentAtIndex(1) {
@@ -27,11 +36,11 @@ class PhoneRTCPlugin : CDVPlugin {
             }
         }
     }
-    
+
     func destroySession(sessionKey: String) {
         self.sessions.removeValueForKey(sessionKey)
     }
-    
+
     func createWebSocket(command: CDVInvokedUrlCommand) {
         let url = command.argumentAtIndex(0) as? String
         let protocols = command.argumentAtIndex(1) as? [String]
@@ -43,11 +52,11 @@ class PhoneRTCPlugin : CDVPlugin {
             sockets[key!] = socket
         }
     }
-    
+
     func destroyWebSocket(sessionKey: String) {
         self.sockets.removeValueForKey(sessionKey)
     }
-    
+
     func close(command: CDVInvokedUrlCommand) {
         let code = command.argumentAtIndex(0) as? Int
         let reason = command.argumentAtIndex(1) as? String
@@ -56,7 +65,7 @@ class PhoneRTCPlugin : CDVPlugin {
             self.sockets[key!]!.close(code, reason: reason)
         }
     }
-    
+
     func disconnect(command: CDVInvokedUrlCommand) {
         let args: AnyObject = command.argumentAtIndex(0)
         if let sessionKey = args.objectForKey("sessionKey") as? String {
@@ -67,7 +76,7 @@ class PhoneRTCPlugin : CDVPlugin {
             }
         }
     }
-    
+
     func dispatch(callbackId: String, message: NSData) {
         let json = (try! NSJSONSerialization.JSONObjectWithData(message,
             options: NSJSONReadingOptions.MutableLeaves)) as! [NSObject: AnyObject]
@@ -75,7 +84,7 @@ class PhoneRTCPlugin : CDVPlugin {
         pluginResult.setKeepCallbackAsBool(true);
         self.commandDelegate!.sendPluginResult(pluginResult, callbackId: callbackId)
     }
-    
+
     func initialize(command: CDVInvokedUrlCommand) {
         let args: AnyObject = command.argumentAtIndex(0)
         if let sessionKey = args.objectForKey("sessionKey") as? String {
@@ -86,7 +95,7 @@ class PhoneRTCPlugin : CDVPlugin {
             }
         }
     }
-    
+
     func receive(command: CDVInvokedUrlCommand) {
         let args: AnyObject = command.argumentAtIndex(0)
         if let sessionKey = args.objectForKey("sessionKey") as? String {
@@ -99,7 +108,7 @@ class PhoneRTCPlugin : CDVPlugin {
             }
         }
     }
-    
+
     func registerHandler(command: CDVInvokedUrlCommand) {
         let timeout = command.argumentAtIndex(0) as? Double
         if timeout != nil {
@@ -108,7 +117,7 @@ class PhoneRTCPlugin : CDVPlugin {
             })
         }
     }
-    
+
     func send(command: CDVInvokedUrlCommand) {
         let data: AnyObject? = command.argumentAtIndex(0)
         let key = command.argumentAtIndex(1) as? String
@@ -116,7 +125,7 @@ class PhoneRTCPlugin : CDVPlugin {
             self.sockets[key!]!.send(data!)
         }
     }
-    
+
     func toggleMute(command: CDVInvokedUrlCommand) {
         let args: AnyObject = command.argumentAtIndex(0);
         if let sessionKey = args.objectForKey("sessionKey") as? String {
@@ -129,7 +138,7 @@ class PhoneRTCPlugin : CDVPlugin {
             }
         }
     }
-    
+
     func unregisterHandler(command: CDVInvokedUrlCommand) {
         self.application.clearKeepAliveTimeout()
     }
